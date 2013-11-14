@@ -1,0 +1,287 @@
+* Summary
+
+** 9:00 Keynote: Propagating Modularities, Alexey Radul
+
+http://web.mit.edu/~axch/www/
+
+http://dspace.mit.edu/handle/1721.1/44215
+http://dspace.mit.edu/bitstream/handle/1721.1/44215/MIT-CSAIL-TR-2009-002.pdf
+
+
+*** Modularity 
+
+- Change in components
+- Interfaces as promises
+
+Examples of modularity (i.e., boundaries in programs):
+
+- variable and procedure
+- function
+- method dispatch (applied on different data types)
+- garbage collection 
+- laziness (e.g., haskell streams)
+- private state
+- concurrency 
+- backtracking (prolog)
+  http://www.doc.gold.ac.uk/~mas02gw/prolog_tutorial/prologpages/search.html
+
+*** COMMENT Merge 
+
+- commutative, associative, idempotent monotonic
+
+#+BEGIN_SRC scheme
+(merge (f a) (f ) (merge a b)) = (merge a b)
+#+END_SRC
+
+*** Propagator Model 
+
+Concurrent proceses that merge at communication points 
+
++ merge -> proc
+
+Bolted infrastructure: monitoring, audits, logging
+
+One would look at this with cells defined as depending on other cells
+(nodes in a tree with proc and merge). 
+
+This would be effectively the same as functional composition with
+functions as proc: merge is the internal composition. 
+
+- ? cell:{merge,proc}
+
+This is based on some of the work that was noted in Sussman's work on
+electrical component (diode as nodes).  Original notes in SICP was
+backtracking. 
+
+*** Examples 
+
+Diagram a system with 10000 switches and determine the behavior. 
+
+Example: 
+
+#+BEGIN_SRC javascript
+function Switch() { this.on = function(){}; this.off = function(){}; this.status = _status;  } 
+#+END_SRC
+
+*** Alternatives 
+
+http://www.bloom-lang.net/
+
+
+Look at proc as the function and merge as arguments; what would be
+required to only partially apply. 
+
+- FRP as a system for UI-driven design. 
+
+
+Cells implemented as custom networks. UI is driven by things like user
+interaction that updates only some components.  Those are based on the
+functions that.  FRP requires that the cells be a DAG.  Fixed point
+operator(?) with the functions?
+
+* Session 1 (Static Analysis)
+** 10:30 Entangled Abstract Domains for Higher-order Programs, Authors: Shuying Liang and Matthew Might
+
+http://www.cs.utah.edu/~liangsy/
+
+https://github.com/shuyingliang/entangled-domain-py
+
+*** CEK machines 
+
+Same as the Scheme implementation for interpreters. 
+
+The environment E is the Variables mapped to a lambda over E (where
+the beta application has E redefined). 
+
+*** CESK
+
+http://matt.might.net/articles/cesk-machines/
+https://github.com/sid0/z3.rkt
+
+** 10:55 Multi-core Parallelization of Abstract Abstract Machines, Authors: Leif Anderson and Matthew Might
+
+- "JavaScript and the Lambda Calculus are pretty much the same thing"
+- "In your grant proposals substitute JavaScript for Lambda Calculus"
+
+Used Scala for the Actors implementation. 
+
+http://matt.might.net/articles/cesk-machines/
+
+- This looks at static analysis for a finite number of states (either
+  terminating or looping) 
+
+CE machine is a simple environment-based interpreter. 
+
+Infinite if environment is traditionally defined. 
+
+http://matt.might.net/articles/cps-conversion/
+
+The implementation is effectively a queue of states where producers
+consume the states, determine if reviewed, evaluate consequent states,
+then pushes those states back to the queue. 
+
+Worst case is the omega combinator
+(http://math.stackexchange.com/questions/96122/looping-combinator).
+
+Best case is factorial.
+
+Average case is http://en.wikipedia.org/wiki/Collatz_conjecture .
+
+Some of the example code should be in
+https://github.com/LeifAndersen/CPSLambdaCalc .
+
+** 11:20 A Unified Approach to Polyvariance in Abstract Interpretations, Authors: Thomas Gilray and Matthew Might
+
+See "time-stamped CESK⋆ machine". 
+
+http://matt.might.net/articles/implementation-of-kcfa-and-0cfa/
+
+Updates the model to include the following formal parameters: 
+
+- control
+- environment
+- store
+- kontinuation
+- timestamp * 
+
+Closure as the lambda over the environment. Store-allocated
+continuations. 
+
+https://dl.acm.org/results.cfm?query=Name%3A%22Thomas%20Gilray%22&querydisp=Name%3A%22Thomas%20Gilray%22&termshow=matchboolean&coll=DL&dl=ACM&CFID=378677254&CFTOKEN=12310942
+
+* Session 2 (miniKanren)
+** 2:00 mu-Kanren: More with Less, Authors: Jason Hemann and Daniel P. Friedman
+
+
+https://github.com/jasonhemann/miniKanren
+
+*** Quine in Mini-Kanren
+
+*** Kanren
+
+- ==
+- call/fresh 
+- conj
+- disj
+
+*** Examples 
+
+#+BEGIN_SRC scheme
+
+#+END_SRC
+** 2:25 rKanren: Guided Search in miniKanren, Authors: Cameron Swords and Daniel P. Friedman
+
+http://bithacker.net/2013-09-20-rkanren.html
+https://github.com/cgswords/rkanren
+
+* Session 3 (General Scheming)
+** 3:15 lambda*: Beyond Currying, Authors: Jason Hemann and Daniel P. Friedman
+
+Standard currying notes. 
+
+#+BEGIN_SRC scheme
+((lambda (x) x) 5)
+(((lambda (x y) (+ x y)) 3 4))
+#+END_SRC
+
+
+Return functions of only one formal parameter. Expected outcome is 0
+formal parameters is execution. 2+ expected function in a curried
+function would be a conceptual flaw.  
+
+Look at macros that can apply the functions recursively. 
+
+Example: 
+
+#+BEGIN_SRC scheme
+(+ 1 2 3 4 5 6) 
+#+END_SRC
+
+becomes 
+
+#+BEGIN_SRC scheme
+(((((+ 1) 2) 3) 4) 5)
+#+END_SRC
+
+The example that you generally see is 
+
+#+BEGIN_EXAMPLE
+Welcome to Racket v5.3.5.
+racket@> (list 1 2 3 4)
+'(1 2 3 4)
+racket@> (((list 1 2) 3) 4)
+application: not a procedure;
+racket@> (/ 1 2 3 4)
+1/24
+racket@> (* 1 2 3 4)
+24
+racket@> (+ 1 2 3 4)
+10
+racket@> (list 1 2 3 4)
+'(1 2 3 4)
+racket@> (apply + '(1 2 3 4))
+10
+((apply + '(1 2 3 )) 4) 
+application: not a procedure;
+#+END_EXAMPLE
+
+What would it mean to apply a number to a list function so that
+polyvariadic functions work as expected.  Look at anything that
+wouldn't throw an arity mismatch. 
+
+http://clojuredocs.org/clojure_core/clojure.core/gensym
+
+The example would be to provide this in a reduce-enabled feature in
+JavaScript: 
+
+#+BEGIN_SRC javascript
+var e = function(a, b, c) { return a + b + c; }
+// e(1)(2)(3)
+#+END_SRC
+
+The example in Racket is that something that is curried continues to
+return a function until applied with no other arguments. 
+
+** 3:40 Automatic Cross-Library Optimization, Authors: Andrew Keep and Kent Dybvig
+
+R6RS: http://community.schemewiki.org/?RnRS
+
+
+
+#+BEGIN_SRC scheme
+(library (factorial)
+         (export (fact))
+         (import (rnrs))
+         (define fact
+           (lambda (n) 
+             (if (zero? n)
+                 1
+                 (* n (dec n))))))
+#+END_SRC
+
+Contrast with the RequireJS and CommonJS module approaches. 
+
+** 4:05 R7RS Scheme Standardization Update, Will Clinger
+
+- Aug 2009, R5RS compatibility and R6RS replacement for production
+
+R7RS: The small language. This is the work associated with the
+following working group (#1):
+http://www.scheme-reports.org/2013/working-group-1.html
+
+
+
+Changes: 
+
+- case sensitivity 
+- library syntax 
+- records 
+- parameters 
+- binary i/o
+- lexical syntax 
+- unicode support 
+
+
+http://www.scheme-reports.org/
+
+
